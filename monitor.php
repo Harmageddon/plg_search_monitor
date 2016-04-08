@@ -135,21 +135,23 @@ class PlgSearchMonitor extends JPlugin
 
 		$query->select('i.id, i.title, p.name AS section, i.created, i.text')
 			->from('#__monitor_issues AS i')
-			->leftJoin('#__monitor_projects AS p ON i.project_id = p.id');
+			->leftJoin('#__monitor_projects AS p ON i.project_id = p.id')
+			->leftJoin('#__monitor_issue_classifications AS cl ON i.classification = cl.id');
+
+		// ACL
+		$query->where('cl.access IN (' . implode(',', JFactory::getUser()->getAuthorisedViewLevels()) . ')');
 
 		if ($phrase === 'any' || $phrase === 'all')
 		{
 			$split = preg_split('/\s+/', $text);
 
-			var_dump($split, $text);
-
 			foreach ($split as $word)
 			{
-				$cond = '(title LIKE ' . $this->db->quote('%' . $word . '%', true);
+				$cond = '(i.title LIKE ' . $this->db->quote('%' . $word . '%', true);
 
 				if ($this->params->get('search_issue_text', 1))
 				{
-					$cond .= ' OR text LIKE ' . $this->db->quote('%' . $word . '%', true);
+					$cond .= ' OR i.text LIKE ' . $this->db->quote('%' . $word . '%', true);
 				}
 
 				$cond .= ')';
@@ -161,11 +163,11 @@ class PlgSearchMonitor extends JPlugin
 		}
 		else
 		{
-			$query->where('title LIKE ' . $this->db->quote('%' . $text . '%', true), 'OR');
+			$query->where('i.title LIKE ' . $this->db->quote('%' . $text . '%', true), 'OR');
 
 			if ($this->params->get('search_issue_text', 1))
 			{
-				$query->where('text LIKE ' . $this->db->quote('%' . $text . '%', true));
+				$query->where('i.text LIKE ' . $this->db->quote('%' . $text . '%', true));
 			}
 		}
 
@@ -196,7 +198,7 @@ class PlgSearchMonitor extends JPlugin
 		foreach ($rows as $row)
 		{
 			$row->href = 'index.php?option=com_monitor&view=issue&id=' . $row->id;
-			$row->browsernav = 0; // TODO
+			$row->browsernav = $this->params->get('target');
 		}
 
 		return $rows;
@@ -218,7 +220,11 @@ class PlgSearchMonitor extends JPlugin
 		$query->select('c.id, c.created, c.text, c.issue_id, i.title, p.name AS section')
 			->from('#__monitor_comments AS c')
 			->leftJoin('#__monitor_issues AS i ON c.issue_id = i.id')
-			->leftJoin('#__monitor_projects AS p ON i.project_id = p.id');
+			->leftJoin('#__monitor_projects AS p ON i.project_id = p.id')
+			->leftJoin('#__monitor_issue_classifications AS cl ON i.classification = cl.id');
+
+		// ACL
+		$query->where('cl.access IN (' . implode(',', JFactory::getUser()->getAuthorisedViewLevels()) . ')');
 
 		if ($phrase === 'any' || $phrase === 'all')
 		{
@@ -264,7 +270,7 @@ class PlgSearchMonitor extends JPlugin
 		{
 			$row->title = 'Re: ' . $row->title;
 			$row->href = 'index.php?option=com_monitor&view=issue&id=' . $row->issue_id . '#comment-' . $row->id;
-			$row->browsernav = 0; // TODO
+			$row->browsernav = $this->params->get('target');
 		}
 
 		return $rows;

@@ -19,7 +19,17 @@
 	<config>
 		<fields name="params">
 			<fieldset name="basic">
-
+				<field
+					name="target"
+					type="list"
+					label="PLG_SEARCH_MONITOR_FIELD_TARGET_LABEL"
+					description="PLG_SEARCH_MONITOR_FIELD_TARGET_DESC"
+					default="0"
+					filter="int"
+				>
+					<option value="0">JBROWSERTARGET_PARENT</option>
+					<option value="1">JBROWSERTARGET_NEW</option>
+				</field>
 			</fieldset>
 		</fields>
 	</config>
