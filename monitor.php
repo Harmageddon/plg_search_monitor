@@ -59,9 +59,6 @@ class PlgSearchMonitor extends JPlugin
 			return array();
 		}
 
-		$user	= JFactory::getUser();
-		$groups	= implode(',', $user->getAuthorisedViewLevels()); // TODO: authorization check
-
 		if (!is_array($areas))
 		{
 			return array();
